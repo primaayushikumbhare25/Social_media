@@ -11,7 +11,7 @@ import Friend from "components/Friend";
 import WidgetWrapper from "components/WidgetWrapper";
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { setPost  , deletePostAction } from "state";
+import { setPost, deletePostAction } from "state";
 
 const PostWidget = ({
   postId,
@@ -49,20 +49,39 @@ const PostWidget = ({
   };
   // console.log("Post object:", post);
 
- const deletePost = async () => {
-  const response = await fetch(`http://localhost:3001/posts/${postId}`, {
-    method: "DELETE",
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  const deletePost = async () => {
+    const response = await fetch(`http://localhost:3001/posts/${postId}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    });
 
-  if (response.ok) {
-    dispatch(deletePostAction({ postId }));
-  } else {
-    console.error("Failed to delete post");
-  }
-};
+    if (response.ok) {
+      dispatch(deletePostAction({ postId }));
+    } else {
+      console.error("Failed to delete post");
+    }
+  };
 
+  //To add a comment
+  const [newComment, setNewComment] = useState("");
 
+  const addComment = async () => {
+    const response = await fetch(
+      `http://localhost:3001/posts/${postId}/comment`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userId: loggedInUserId, text: newComment }),
+      },
+    );
+
+    const updatedPost = await response.json();
+    dispatch(setPost({ post: updatedPost }));
+    setNewComment("");
+  };
 
   return (
     <WidgetWrapper m="2rem 0">
@@ -110,26 +129,34 @@ const PostWidget = ({
         </IconButton>
       </FlexBetween>
       {isComments && (
-        <Box mt="0.5rem">
-          {comments.map((comment, i) => (
-            <Box key={`${name}-${i}`}>
-              <Divider />
-              <Typography sx={{ color: main, m: "0.5rem 0", pl: "1rem" }}>
-                {comment}
-              </Typography>
-            </Box>
-          ))}
-          <Divider />
-        </Box>
-      )}
+  <Box mt="0.5rem">
+    {comments.map((comment, i) => (
+      <Box key={i}>
+        <Divider />
+        <Typography sx={{ color: main, m: "0.5rem 0", pl: "1rem" }}>
+          {comment.text}
+        </Typography>
+      </Box>
+    ))}
+    <Divider />
+    <Box display="flex" mt="0.5rem">
+      <input
+        value={newComment}
+        onChange={(e) => setNewComment(e.target.value)}
+        placeholder="Write a comment..."
+      />
+      <button onClick={addComment}>Post</button>
+    </Box>
+  </Box>
+)}
 
-    
-        <FlexBetween gap="1rem">
-          {loggedInUserId === postUserId && (
-            <IconButton onClick={deletePost}>
-              <DeleteOutline sx={{ color: "red" }} />
-            </IconButton>
-          )}
+
+      <FlexBetween gap="1rem">
+        {loggedInUserId === postUserId && (
+          <IconButton onClick={deletePost}>
+            <DeleteOutline sx={{ color: "red" }} />
+          </IconButton>
+        )}
       </FlexBetween>
     </WidgetWrapper>
   );

@@ -1,3 +1,5 @@
+import mongoose from "mongoose";
+
 import Post from "../models/Post.js";
 import User from "../models/User.js";
 
@@ -72,6 +74,8 @@ export const likePost = async (req, res) => {
   }
 };
 
+
+//TO DELETE A POST
 export const deletePost = async (req, res) => {
   try {
     const { id } = req.params;
@@ -92,3 +96,42 @@ export const deletePost = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+//TO ADD A COMMENTS
+export const addComment = async (req, res) => {
+  try {
+    const { id } = req.params; // postId
+    const { userId, text } = req.body;
+
+    const post = await Post.findById(id);
+    if (!post) return res.status(404).json({ message: "Post not found" });
+
+    const newComment = { _id: new mongoose.Types.ObjectId(), userId, text };
+    post.comments.push(newComment);
+    await post.save();
+
+    res.status(200).json(post);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+
+//TO DELETE COMMENT
+export const deleteComment = async (req, res) => {
+  try {
+    const { id, commentId } = req.params;
+    const post = await Post.findById(id);
+    if (!post) return res.status(404).json({ message: "Post not found" });
+
+    post.comments = post.comments.filter(
+      (comment) => comment._id.toString() !== commentId
+    );
+    await post.save();
+
+    res.status(200).json(post);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+

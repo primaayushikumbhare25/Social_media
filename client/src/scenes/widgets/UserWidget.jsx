@@ -4,6 +4,7 @@ import {
   LocationOnOutlined,
   WorkOutlineOutlined,
 } from "@mui/icons-material";
+import ModeEditOutlineIcon from '@mui/icons-material/ModeEditOutline';
 import { Box, Typography, Divider, useTheme } from "@mui/material";
 import UserImage from "components/UserImage";
 import FlexBetween from "components/FlexBetween";
@@ -11,9 +12,12 @@ import WidgetWrapper from "components/WidgetWrapper";
 import { useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import EditUserProfile from "./EditUserProfile";
 
 const UserWidget = ({ userId, picturePath }) => {
   const [user, setUser] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+
   const { palette } = useTheme();
   const navigate = useNavigate();
   const token = useSelector((state) => state.token);
@@ -63,20 +67,26 @@ const UserWidget = ({ userId, picturePath }) => {
               variant="h4"
               color={dark}
               fontWeight="500"
-              // sx={{
-              //   "&:hover": {
-              //     color: palette.primary.light,
-              //     cursor: "pointer",
-              //   },
-              // }}
             >
               {firstName} {lastName}
             </Typography>
             <Typography color={medium}>{friends.length} friends</Typography>
           </Box>
         </FlexBetween>
+        <FlexBetween>
+  {/* <Typography variant="h5">
+    {user.firstName} {user.lastName}
+  </Typography> */}
+ <ModeEditOutlineIcon onClick={() => setIsEditing(true)}> <EditOutlined /> </ModeEditOutlineIcon>
+</FlexBetween>
+
         <ManageAccountsOutlined />
       </FlexBetween>
+    {isEditing && (
+  <EditUserProfile user={user} onClose={() => setIsEditing(false)} />
+)}
+
+
 
       <Divider />
 
